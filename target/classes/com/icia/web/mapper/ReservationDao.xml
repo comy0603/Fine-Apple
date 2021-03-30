@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.icia.web.dao.ReservationDao">
+
+<resultMap id="reservationResultMap" type="com.icia.web.model.Reservation">
+	<id column="RES_SEQ" property="resSeq" />
+	<result column="USER_ID" property="userId" />
+	<result column="RES_DATE" property="resDate" />
+	<result column="RES_TITLE" property="resTitle" />
+	<result column="RES_MODEL" property="resModel" />
+	<result column="RES_CONTENT" property="resContent" />
+	<result column="USER_PHONE" property="userPhone" />
+	<result column="BUYER_POSTCODE" property="buyerPcode" />
+	<result column="BUYER_ADDRESS" property="buyerAddr" />
+	<result column="BUYER_DETAIL_ADDRESS" property="buyerDeAddr" />
+	<result column="BUYER_EXTRA_ADDRESS" property="buyerExAddr" />
+</resultMap>
+
+<insert id="resInsert" parameterType="com.icia.web.model.Reservation">
+<selectKey resultType="long" keyProperty="resSeq" order="BEFORE">
+	SELECT SEQ_RES_SEQ.NEXTVAL FROM DUAL 
+</selectKey>
+INSERT INTO TBL_RESERV (
+    RES_SEQ,
+    USER_ID,
+    RES_DATE,
+    RES_TITLE,
+    RES_MODEL,
+    RES_CONTENT,
+    USER_PHONE,
+    BUYER_POSTCODE,
+    BUYER_ADDRESS,
+    BUYER_DETAIL_ADDRESS,
+    BUYER_EXTRA_ADDRESS
+) VALUES (
+    #{resSeq},
+    #{userId},
+    #{resDate},
+    #{resTitle},
+    #{resModel},
+    #{resContent},
+    #{userPhone},
+    #{buyerPcode},
+    #{buyerAddr},
+    #{buyerDeAddr},
+    #{buyerExAddr}
+)
+</insert>
+
+<select id="resSelect" parameterType="string" resultMap="reservationResultMap">
+SELECT
+    RES_SEQ,
+    NVL(USER_ID, '') AS USER_ID,
+    NVL(RES_DATE, '') AS RES_DATE,
+    NVL(RES_TITLE, 0) AS RES_TITLE,
+    NVL(RES_CONTENT, '') AS RES_CONTENT,
+    NVL(USER_PHONE, '') AS USER_PHONE,
+    NVL(BUYER_POSTCODE, '') AS BUYER_POSTCODE,
+    NVL(BUYER_ADDRESS, '') AS BUYER_ADDRESS,
+    NVL(BUYER_DETAIL_ADDRESS, '') AS BUYER_DETAIL_ADDRESS,
+    NVL(BUYER_EXTRA_ADDRESS, '') AS BUYER_EXTRA_ADDRESS,
+    NVL(RES_MODEL, 0) AS RES_MODEL
+FROM
+    TBL_RESERV
+WHERE RES_DATE = #{value}
+</select>
+
+<select id="resList" parameterType="string" resultMap="reservationResultMap">
+SELECT 
+    RES_SEQ,
+    USER_ID,
+    NVL(RES_TITLE, 0) AS RES_TITLE, 
+    NVL(RES_MODEL, 0 ) AS RES_MODEL,
+    NVL(RES_CONTENT, '') AS RES_CONTENT,
+    NVL(RES_DATE, '') AS RES_DATE
+  FROM TBL_RESERV
+  WHERE USER_ID = #{value}
+</select>
+
+<select id="resList2" resultMap="reservationResultMap">
+SELECT 
+    RES_SEQ,
+    USER_ID,
+    NVL(RES_TITLE, 0) AS RES_TITLE, 
+    NVL(RES_MODEL, 0 ) AS RES_MODEL,
+    NVL(RES_CONTENT, '') AS RES_CONTENT,
+    NVL(BUYER_ADDRESS, '') AS BUYER_ADDRESS,
+    NVL(RES_DATE, '') AS RES_DATE
+  FROM TBL_RESERV
+</select>
+
+<delete id="resCancel" parameterType="long">
+DELETE FROM TBL_RESERV
+ WHERE RES_SEQ = #{value}
+</delete>
+
+</mapper>

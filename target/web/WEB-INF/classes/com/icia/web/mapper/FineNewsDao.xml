@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.icia.web.dao.FineNewsDao">
+
+<!-- 게시물 resultMap 시작-->
+<resultMap id="fineNewsResultMap" type="com.icia.web.model.FineNews">
+	<id column="BBS_SEQ" property="bbsSeq" />
+	<result column="USER_ID" property="userId" />
+	<result column="USER_NAME" property="userName" />
+	<result column="USER_EMAIL" property="userEmail" />
+	<result column="FILE_NAME" property="fileName" />
+    <result column="BBS_TITLE" property="bbsTitle" />
+    <result column="BBS_CONTENT" property="bbsContent" />
+    <result column="REG_DATE" property="regDate" />
+</resultMap>
+<!-- 게시물 resultMap 끝-->
+
+<!-- 첨부파일 resultMap 시작 -->
+<resultMap id="fineNewsFileResultMap" type="com.icia.web.model.FineNewsFile">
+	<id column="BBS_SEQ" property="bbsSeq" />
+	<id column="FILE_SEQ" property="fileSeq" />
+	<result column="FILE_ORG_NAME" property="fileOrgName" />
+	<result column="FILE_NAME" property="fileName" />
+	<result column="FILE_EXT" property="fileExt" />
+	<result column="FILE_SIZE" property="fileSize" />
+	<result column="REG_DATE" property="regDate" />
+</resultMap>
+<!-- 첨부파일 resultMap 끝 -->
+
+<!-- 게시물 등록 시작 -->
+<insert id="boardInsert" parameterType="com.icia.web.model.FineNews">
+<selectKey resultType="long" keyProperty="bbsSeq" order="BEFORE">
+	SELECT SEQ_NEWS_SEQ.NEXTVAL FROM DUAL 
+</selectKey>
+INSERT INTO TBL_NEWS (
+    BBS_SEQ,
+    USER_ID,
+    BBS_TITLE,
+    BBS_CONTENT,
+    REG_DATE
+) VALUES (
+    #{bbsSeq},
+    #{userId},
+    #{bbsTitle},
+    #{bbsContent},
+    SYSDATE
+)
+</insert>
+<!-- 게시물 등록 끝 -->
+
+<!-- 게시물 조회 시작 -->
+<select id="boardSelect" parameterType="long" resultMap="fineNewsResultMap">
+SELECT
+    A.BBS_SEQ,
+    NVL(A.USER_ID, '') AS USER_ID,
+    NVL(B.USER_NAME, '') AS USER_NAME, 
+    NVL(B.USER_EMAIL, '') AS USER_EMAIL,
+    NVL(C.FILE_NAME, '') AS FILE_NAME,
+    NVL(A.BBS_TITLE, '') AS BBS_TITLE,
+    NVL(A.BBS_CONTENT, '') AS BBS_CONTENT,
+    NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE
+FROM
+    TBL_NEWS A, TBL_USER B, TBL_NEWS_FILE C
+WHERE 
+    A.BBS_SEQ = #{value}
+AND C.BBS_SEQ = #{value}    
+AND A.USER_ID = B.USER_ID
+</select>
+<!-- 게시물 조회 끝 -->
+
+<!-- 게시물 수정 시작 -->
+<update id="boardUpdate" parameterType="com.icia.web.model.FineNews">
+UPDATE TBL_NEWS 
+   SET BBS_TITLE = #{bbsTitle},
+       BBS_CONTENT = #{bbsContent}
+ WHERE BBS_SEQ = #{bbsSeq}        
+</update>
+<!-- 게시물 수정 끝 -->
+
+<!-- 게시물 삭제 시작 -->
+<delete id="boardDelete" parameterType="long">
+DELETE FROM TBL_NEWS
+ WHERE BBS_SEQ = #{value}
+</delete>
+<!-- 게시물 삭제 끝 -->
+
+<!-- 총 게시물 수 시작 -->
+<select id="boardListCount" parameterType="com.icia.web.model.FineNews" resultType="long">
+SELECT COUNT(A.BBS_SEQ) AS CNT
+  FROM TBL_NEWS A, TBL_USER B, TBL_NEWS_FILE C
+ WHERE A.USER_ID = B.USER_ID
+   AND A.BBS_SEQ = C.BBS_SEQ
+<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+	<choose>
+		<when test='searchType == "1"'>
+   AND B.USER_NAME LIKE '%' || #{searchValue} || '%'
+   		</when>
+   		<when test='searchType == "2"'>
+   AND A.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+   		</when>
+   		<when test='searchType == "3"'>
+   AND DBMS_LOB.INSTR(A.BBS_CONTENT, #{searchValue}) > 0
+   		</when>
+   	</choose>
+</if>   
+</select>
+<!-- 총 게시물 수 끝 -->
+
+<!-- 게시물 리스트 시작 -->
+<select id="boardList" parameterType="com.icia.web.model.FineNews" resultMap="fineNewsResultMap">
+SELECT BBS_SEQ,
+       USER_NAME,
+       USER_EMAIL,
+       BBS_TITLE,
+       REG_DATE,
+       FILE_NAME       
+FROM (  SELECT ROWNUM AS RNUM,
+               BBS_SEQ,
+               USER_NAME,
+               USER_EMAIL,
+               BBS_TITLE,
+               REG_DATE,
+               FILE_NAME       
+        FROM (SELECT
+                    A.BBS_SEQ,
+                    NVL(B.USER_NAME, '') AS USER_NAME,
+                    NVL(B.USER_EMAIL, '') AS USER_EMAIL,
+                    NVL(A.BBS_TITLE, '') AS BBS_TITLE,
+                    NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE,
+                    NVL(C.FILE_NAME, '') AS FILE_NAME
+                FROM
+                    TBL_NEWS A, TBL_USER B, TBL_NEWS_FILE C                    
+                WHERE
+                    A.USER_ID = B.USER_ID
+                  AND
+                    A.BBS_SEQ = C.BBS_SEQ
+<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+	<choose>   
+		<when test='searchType == "1"'>                 
+                AND B.USER_NAME LIKE '%' || #{searchValue} || '%'
+      	</when>
+      	<when test='searchType == "2"'>
+                AND A.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+      	</when>
+      	<when test='searchType == "3"'>
+                AND DBMS_LOB.INSTR(A.BBS_CONTENT, #{searchValue}) > 0
+      	</when>
+	</choose>
+</if>                   
+ORDER BY BBS_SEQ DESC))
+WHERE 
+        RNUM <![CDATA[>=]]> #{startRow}
+AND
+        RNUM <![CDATA[<=]]> #{endRow}
+</select>
+<!-- 게시물 리스트 끝 -->
+
+
+
+<!-- ############################################################ -->
+<!-- 첨부파일 시작 -->
+
+<!-- 첨부파일 등록 시작 -->
+<insert id="boardFileInsert" parameterType="com.icia.web.model.FineNewsFile">
+INSERT INTO TBL_NEWS_FILE (
+    BBS_SEQ,
+    FILE_SEQ,
+    FILE_ORG_NAME,
+    FILE_NAME,
+    FILE_EXT,
+    FILE_SIZE,
+    REG_DATE
+) VALUES (
+    #{bbsSeq},
+    1,
+    #{fileOrgName},
+    #{fileName},
+    #{fileExt},
+    #{fileSize},
+    SYSDATE
+)
+</insert>
+<!-- 첨부파일 등록 끝 -->
+
+<!-- 첨부파일 조회 시작 -->
+<select id="boardFileSelect" parameterType="long" resultMap="fineNewsFileResultMap">
+SELECT
+    BBS_SEQ,
+    FILE_SEQ,
+    NVL(FILE_ORG_NAME, '') AS FILE_ORG_NAME,
+    NVL(FILE_NAME, '') AS FILE_NAME,
+    NVL(FILE_EXT, '') AS FILE_EXT,
+    NVL(FILE_SIZE, 0) AS FILE_SIZE,
+    NVL(TO_CHAR(REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE
+FROM
+    TBL_NEWS_FILE
+WHERE BBS_SEQ = #{value}
+  AND FILE_SEQ = 1
+</select>  
+<!-- 첨부파일 조회 끝 -->
+
+<!-- 첨부 파일 삭제 시작 -->
+<delete id="boardFileDelete" parameterType="long">
+DELETE FROM TBL_NEWS_FILE
+ WHERE BBS_SEQ = #{value}
+</delete>
+<!-- 첨부 파일 삭제 끝 -->
+
+<!-- 첨부파일 끝 -->
+</mapper>

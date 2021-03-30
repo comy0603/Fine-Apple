@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.icia.web.dao.FineUserDao">
+
+<resultMap type="com.icia.web.model.FineUser" id="fineUserResultMap">
+	<id column="USER_ID" property="userId" />
+	<result column="USER_PWD" property="userPwd" />
+	<result column="USER_NAME" property="userName" />
+	<result column="USER_EMAIL" property="userEmail" />
+	<result column="USER_PHONE" property="userphone" />
+	<result column="STATUS" property="status" />
+	<result column="MANAGER" property="manager" />
+	<result column="TEMP_ID" property="tmpId" />
+	<result column="DOOR_ID" property="doorId" />
+	<result column="WIDGET_DOOR" property="widgetDoor" />
+	<result column="WIDGET_TMP" property="widgetTmp" />
+	<result column="REG_DATE" property="regDate" />
+	<result column="POSTCODE" property="postcode" />
+	<result column="ADDRESS" property="address" />
+	<result column="DETAIL_ADDRESS" property="detailAddress" />
+	<result column="EXTRA_ADDRESS" property="extraAddress" />
+</resultMap>
+
+
+<insert id="fineUserInsert" parameterType="com.icia.web.model.FineUser">
+INSERT INTO TBL_USER 
+	(USER_ID, 
+	 USER_PWD, 
+	 USER_NAME, 
+	 USER_EMAIL, 
+	 STATUS,
+	 USER_PHONE, 
+	 POSTCODE, 
+     ADDRESS, 
+     DETAIL_ADDRESS, 
+     EXTRA_ADDRESS,
+	 MANAGER,
+	 TEMP_ID,
+	 DOOR_ID,
+	 WIDGET_DOOR,
+	 WIDGET_TMP, 
+	 REG_DATE) 
+VALUES 
+	(#{userId}, 
+	 #{userPwd}, 
+	 #{userName},
+     #{userEmail}, 
+     #{status},
+     #{userphone},
+     #{postcode},
+     #{address},
+     #{detailAddress},
+     #{extraAddress},
+     #{manager},
+     #{tmpId},
+     #{doorId},
+     0, 
+     0,
+     SYSDATE) 
+</insert>
+
+<update id="fineUserUpdate" parameterType="com.icia.web.model.FineUser">
+UPDATE TBL_USER SET
+    USER_PWD = #{userPwd}, 
+    USER_NAME = #{userName}, 
+    USER_EMAIL = #{userEmail},
+    USER_PHONE = #{userphone},
+    POSTCODE = #{postcode}, 
+    ADDRESS = #{address}, 
+    DETAIL_ADDRESS = #{detailAddress}, 
+    EXTRA_ADDRESS = #{extraAddress} 
+WHERE 
+    USER_ID = #{userId}  
+</update>
+
+<update id="fineUserStatusUpdate" parameterType="com.icia.web.model.FineUser">
+UPDATE TBL_USER SET
+    STATUS = 'N' 
+WHERE 
+    USER_ID = #{userId}  
+</update>
+
+<update id="fineUserAdminUpdate" parameterType="com.icia.web.model.FineUser">
+UPDATE TBL_USER SET
+    MANAGER = 'Y' 
+WHERE 
+    USER_ID = #{userId}  
+</update>
+
+<update id="fineUserSensorUpdate" parameterType="com.icia.web.model.FineUser">
+UPDATE TBL_USER 
+SET
+    DOOR_ID = #{doorId},
+    TEMP_ID = #{tmpId},
+    WIDGET_DOOR = #{widgetDoor},
+    WIDGET_TMP = #{widgetTmp} 
+WHERE 
+    USER_ID = #{userId}  
+</update>
+
+<select id="fineUserSelect" parameterType="string" resultMap="fineUserResultMap">
+SELECT 
+    USER_ID, 
+    NVL(USER_PWD, '') AS USER_PWD, 
+    NVL(USER_NAME, '') AS USER_NAME, 
+    NVL(USER_EMAIL, '') AS USER_EMAIL,
+    NVL(USER_PHONE, '') AS USER_PHONE, 
+    NVL(STATUS, 'N') AS STATUS,
+    MANAGER,
+    NVL(TEMP_ID, 0) AS TEMP_ID,
+    NVL(DOOR_ID, 0) AS DOOR_ID,
+    NVL(WIDGET_DOOR, 0) AS WIDGET_DOOR,
+    NVL(WIDGET_TMP, 0) AS WIDGET_TMP,
+    NVL(TO_CHAR(REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE,
+    NVL(POSTCODE, '') AS POSTCODE, 
+    NVL(ADDRESS, '') AS ADDRESS, 
+    NVL(DETAIL_ADDRESS, '') AS DETAIL_ADDRESS, 
+    NVL(EXTRA_ADDRESS, '') AS EXTRA_ADDRESS 
+FROM 
+	 TBL_USER
+WHERE 
+    USER_ID = #{value} 
+</select>
+
+<select id="fineUserEmailSelect" parameterType="string" resultMap="fineUserResultMap">
+SELECT 
+    USER_ID, 
+    NVL(USER_PWD, '') AS USER_PWD, 
+    NVL(USER_NAME, '') AS USER_NAME, 
+    USER_EMAIL,
+    NVL(USER_PHONE, '') AS USER_PHONE, 
+    NVL(STATUS, 'N') AS STATUS,
+    MANAGER,
+    NVL(TEMP_ID, 0) AS TEMP_ID,
+    NVL(DOOR_ID, 0) AS DOOR_ID, 
+    NVL(WIDGET_DOOR, 0) AS WIDGET_DOOR,
+    NVL(WIDGET_TMP, 0) AS WIDGET_TMP,
+    NVL(TO_CHAR(REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE,
+    NVL(POSTCODE, '') AS POSTCODE, 
+    NVL(ADDRESS, '') AS ADDRESS, 
+    NVL(DETAIL_ADDRESS, '') AS DETAIL_ADDRESS, 
+    NVL(EXTRA_ADDRESS, '') AS EXTRA_ADDRESS 
+FROM 
+	 TBL_USER
+WHERE 
+    USER_EMAIL = #{value} 
+</select>
+
+<select id="userList" parameterType="string" resultMap="fineUserResultMap">
+SELECT USER_ID, 
+    NVL(USER_PWD, '') AS USER_PWD, 
+    NVL(USER_NAME, '') AS USER_NAME, 
+    NVL(USER_EMAIL, '') AS USER_EMAIL,
+    NVL(USER_PHONE, '') AS USER_PHONE, 
+    NVL(STATUS, 'N') AS STATUS,
+    MANAGER,
+    NVL(TEMP_ID, 0) AS TEMP_ID,
+    NVL(DOOR_ID, 0) AS DOOR_ID,
+    NVL(WIDGET_DOOR, 0) AS WIDGET_DOOR,
+    NVL(WIDGET_TMP, 0) AS WIDGET_TMP,
+    NVL(TO_CHAR(REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE,
+    NVL(POSTCODE, '') AS POSTCODE, 
+    NVL(ADDRESS, '') AS ADDRESS, 
+    NVL(DETAIL_ADDRESS, '') AS DETAIL_ADDRESS, 
+    NVL(EXTRA_ADDRESS, '') AS EXTRA_ADDRESS 
+ FROM TBL_USER
+ WHERE STATUS = #{value}
+</select>
+
+</mapper>

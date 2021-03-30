@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.icia.web.dao.PayDao">
+
+<resultMap  id="payResultMap" type="com.icia.web.model.Pay">
+	<id column="PAY_SEQ" property="paySeq" />
+	<result column="PG_COMP" property="pgCompany" />
+	<result column="KIND" property="kind" />
+	<result column="MER_UID" property="merUid" />
+	<result column="ORDER_NAME" property="orderName" />
+	<result column="PAYMENT" property="payment" />
+	<result column="USER_EMAIL" property="userEmail" />	
+	<result column="USER_NAME" property="userName" />
+	<result column="USER_PHONE" property="userPhone" />
+	<result column="USER_ADDR" property="userAddr" />
+	<result column="USER_POSTCODE" property="userPostcode" />	
+	<result column="BUY_DATE" property="buyDate" />
+	<result column="STATUS" property="status" />
+	<result column="USER_ID" property="userId" />
+	
+</resultMap>
+
+	
+<!-- 구매 정보 등록 시작 -->
+<insert id="payInsert" parameterType="com.icia.web.model.Pay">
+<selectKey resultType="long" keyProperty="paySeq" order="BEFORE">
+	SELECT SEQ_PAY_SEQ.NEXTVAL FROM DUAL 
+</selectKey>
+INSERT INTO TBL_PAYMENT (
+    PAY_SEQ,
+    PG_COMP,
+    KIND,
+    MER_UID,
+    ORDER_NAME,
+    PAYMENT,
+    USER_EMAIL, 
+    USER_NAME,
+    USER_PHONE,
+    USER_ADDR,
+    USER_POSTCODE,
+    BUY_DATE,
+    STATUS,
+    USER_ID      
+) VALUES (
+	#{paySeq},
+	#{pgCompany},
+	#{kind},
+    #{merUid},
+    #{orderName},
+    #{payment},
+    #{userEmail},
+    #{userName},
+    #{userPhone},
+    #{userAddr},
+    #{userPostcode},
+    SYSDATE,
+    #{status},
+    #{userId}    
+)
+</insert>
+<!-- 구매 정보 등록 끝 -->
+	
+<!-- 구매 조회 시작 -->
+<select id="paySelect" parameterType="string" resultMap="payResultMap">
+SELECT
+	PAY_SEQ,
+	MER_UID,
+    NVL(KIND, '') AS KIND,
+    NVL(ORDER_NAME, '') AS ORDER_NAME,
+    NVL(PAYMENT, 0) AS PAYMENT,
+    NVL(USER_EMAIL, '') AS USER_EMAIL,
+    NVL(USER_NAME, '') AS USER_NAME,
+    NVL(USER_PHONE, '') AS USER_PHONE,
+    NVL(USER_ADDR, '') AS USER_ADDR,
+    NVL(USER_POSTCODE, '') AS USER_POSTCODE,
+    NVL(TO_CHAR(BUY_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS BUY_DATE,
+    NVL(STATUS, '') AS STATUS,
+    NVL(USER_ID, '') AS USER_ID
+FROM
+    TBL_PAYMENT
+WHERE 
+	MER_UID = #{value}    
+</select>
+<!-- 구매 조회 끝 -->
+	
+<!-- 구매 정보 수정 시작 -->
+<update id="payUpdate" parameterType="com.icia.web.model.Pay">
+UPDATE TBL_PAYMENT
+   SET STATUS = #{status}
+ WHERE PAY_SEQ = #{paySeq}       
+</update>
+<!-- 구매 정보 수정 끝 -->	
+
+<!-- 구매 정보 총 개수 시작 -->
+<select id="payListCount" parameterType="string" resultType="long">
+SELECT COUNT( PAY_SEQ ) AS CNT
+  FROM TBL_PAYMENT
+ WHERE USER_ID = #{value}
+</select>
+<!-- 구매 정보 총 개수 끝 -->
+
+<!-- 구매정보 리스트 시작 -->
+<select id="payList" parameterType="string" resultMap="payResultMap">
+SELECT PAY_SEQ, 
+        NVL(ORDER_NAME, '') AS ORDER_NAME,
+        NVL(KIND, '') AS KIND,
+        NVL(PAYMENT, 0) AS PAYMENT,
+        NVL(TO_CHAR(BUY_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS BUY_DATE,
+        NVL(STATUS, '') AS STATUS
+ FROM TBL_PAYMENT
+ WHERE USER_ID = #{value}
+</select>
+<!-- 구매정보 리스트 끝 -->
+
+<select id="payList2" parameterType="string" resultMap="payResultMap">
+SELECT PAY_SEQ,
+		USER_ID,
+        NVL(ORDER_NAME, '') AS ORDER_NAME,
+        NVL(KIND, '') AS KIND,
+        NVL(PAYMENT, 0) AS PAYMENT,
+        NVL(TO_CHAR(BUY_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS BUY_DATE,
+        NVL(STATUS, '') AS STATUS
+ FROM TBL_PAYMENT
+ WHERE STATUS = #{value}
+</select>
+
+</mapper>
